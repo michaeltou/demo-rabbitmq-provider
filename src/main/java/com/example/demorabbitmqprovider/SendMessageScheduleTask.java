@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 
@@ -35,8 +36,9 @@ public class SendMessageScheduleTask {
 
     @Scheduled(cron = "0/1 * * * * ? ")
     public void topicExecute() {
-        for(int i=0;i<10;i++){
-            sendAllTopicMessage();
+        for(int i=0;i<100;i++){
+            sendPriorityTopicMessage();
+            // sendAllTopicMessage();
             //sendManTopicMessage();
             //sendWomanTopicMessage();
         }
@@ -44,6 +46,30 @@ public class SendMessageScheduleTask {
 
 
     }
+    public String sendPriorityTopicMessage() {
+        String messageId = String.valueOf(UUID.randomUUID());
+
+        String messageData = "优先级消息体数据 ";
+        String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("messageId", messageId);
+        dataMap.put("messageData", messageData);
+        dataMap.put("createTime", createTime);
+        int priority = new Random().nextInt(10);
+        dataMap.put("priority", priority);
+
+        System.out.println("发送一个消息消息："+messageId +"，优先级=" + priority);
+
+        rabbitTemplate.convertAndSend(PriorityRabbitConfig.PRIORITY_EXCHANGE,
+                PriorityRabbitConfig.PRIORITY_ROUTING_KEY, dataMap,
+                correlationData -> {
+            correlationData.getMessageProperties().setPriority(priority);
+            return correlationData;
+        });
+
+        return "ok";
+    }
+
 
     @GetMapping("/TestlonelyDirectExchangeMessageAck")
     public String TestlonelyDirectExchangeMessageAck() {
@@ -128,7 +154,8 @@ public class SendMessageScheduleTask {
 */
         User user = new User();
         user.setName("michael");
-        user.setAge(37);
+        user.setAge( new Random().nextInt());
+
         rabbitTemplate.convertAndSend("topicExchange", "topic.all", user);
         return "ok";
     }

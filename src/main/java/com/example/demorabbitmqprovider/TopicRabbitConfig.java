@@ -14,6 +14,7 @@ public class TopicRabbitConfig {
     public final static String man_queue_name = "topic.man.queue";
     public final static String woman_queue_name = "topic.woman.queue";
     public final static String all_queue_name = "topic.all.queue";
+    public final static String demo_queue_name = "topic.demo.queue";
 
     @Bean
     public Queue manQueue() {
@@ -29,6 +30,13 @@ public class TopicRabbitConfig {
     public Queue allQueue() {
         return new Queue(TopicRabbitConfig.all_queue_name);
     }
+
+
+    @Bean
+    public Queue demoQueue() {
+        return new Queue(TopicRabbitConfig.demo_queue_name);
+    }
+
 
     @Bean
     TopicExchange exchange() {
@@ -55,6 +63,11 @@ public class TopicRabbitConfig {
     @Bean
     Binding bindingAllExchangeMessage() {
         return BindingBuilder.bind(allQueue()).to(exchange()).with("topic.all");
+    }
+
+    @Bean
+    Binding bindingDemoExchangeMessage() {
+        return BindingBuilder.bind(demoQueue()).to(exchange()).with("topic.demo");
     }
 
 }
